@@ -1,21 +1,23 @@
 with source as (
-  select * from {{ source('main', 'fhv_tripdata') }}
+
+    select * from {{ source('main', 'fhv_tripdata') }}
+
 ),
+
 renamed as (
 
     select
-        UPPER(TRIM(dispatching_base_num)) as dispatching_base_num,
-        pickup_datetime::datetime as pickup_datetime,
-        dropOff_datetime::datetime as dropoff_datetime,
-        PUlocationID::double as PU_locationID,
-        DOlocationID::double as DO_locationID,
-        UPPER(TRIM(Affiliated_base_number)) as affiliated_base_number,
+        trim(upper(dispatching_base_num)) as  dispatching_base_num, --some ids are lowercase
+        pickup_datetime,
+        dropoff_datetime,
+        pulocationid,
+        dolocationid,
+        --sr_flag, always null so chuck it
+        trim(upper(affiliated_base_number)) as affiliated_base_number,
         filename
 
     from source
 
-    where
-        dropOff_datetime <= now() -- removing rows with future dates
 )
 
 select * from renamed

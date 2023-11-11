@@ -1,37 +1,57 @@
 with source as (
-  select * from {{ source('main', 'bike_data') }}
+
+    select * from {{ source('main', 'bike_data') }}
+
 ),
+
 renamed as (
+
     select
-        -- Replacing null with appropriate value
-        COALESCE(tripduration::int, 0) as trip_duration_in_seconds,
-        -- Combining different data formats
-        COALESCE(starttime::datetime, started_at::datetime) as start_time,
-        COALESCE(stoptime::datetime, ended_at::datetime) as stop_time,
-        COALESCE("start station id"::int, start_station_id::int) as start_station_id,
-        COALESCE(UPPER(TRIM("start station name")), UPPER(TRIM(start_station_name))) as start_station_name,
-        COALESCE("start station latitude"::double, start_lat::double) as start_station_latitude,
-        COALESCE("start station longitude"::double, start_lng::double) as start_station_longitude,
-        COALESCE("end station id"::int, end_station_id::int) as end_station_id,
-        COALESCE(UPPER(TRIM("end station name")), UPPER(TRIM(end_station_name))) as end_station_name,
-        COALESCE("end station latitude"::double, end_lat::double) as end_station_latitude,
-        COALESCE("end station longitude"::double, end_lng::double) as end_station_longitude,
-        bikeid::int as bike_id,
-        TRIM(usertype)::ENUM ('Customer', 'Subscriber') as user_type,
-        "birth year"::int as birth_year,
-        CASE
-            WHEN TRIM(gender) = '0' THEN 'Unknown'
-            WHEN TRIM(gender) = '1' THEN 'Male'
-            WHEN TRIM(gender) = '2' THEN 'Female'
-            ELSE 'Unknown' -- default case
-        END as gender,
+        tripduration,
+        starttime,
+        stoptime,
+        "start station id",
+        "start station name",
+        "start station latitude",
+        "start station longitude",
+        "end station id",
+        "end station name",
+        "end station latitude",
+        "end station longitude",
+        bikeid,
+        usertype,
+        "birth year",
+        gender,
         ride_id,
-        TRIM(rideable_type)::ENUM('classic_bike', 'docked_bike', 'electric_bike') as rideable_type,
-        TRIM(member_casual)::ENUM('member', 'casual') as member_casual,
+        rideable_type,
+        started_at,
+        ended_at,
+        start_station_name,
+        start_station_id,
+        end_station_name,
+        end_station_id,
+        start_lat,
+        start_lng,
+        end_lat,
+        end_lng,
+        member_casual,
         filename
 
     from source
 
 )
 
-select * from renamed
+select
+	coalesce(starttime, started_at)::timestamp as started_at_ts,
+	coalesce(stoptime, ended_at)::timestamp as ended_at_ts,
+	coalesce(tripduration::int,datediff('second', started_at_ts, ended_at_ts)) tripduration,
+	coalesce("start station id", start_station_id) as start_station_id,
+	coalesce("start station name", start_station_name) as start_station_name,
+	coalesce("start station latitude", start_lat)::double as start_lat,
+	coalesce("start station longitude", start_lng)::double as start_lng,
+	coalesce("end station id", end_station_id) as end_station_id,
+	coalesce("end station name", end_station_name) as end_station_name,
+	coalesce("end station latitude", end_lat)::double as end_lat,
+	coalesce("end station longitude", end_lng)::double as end_lng,
+	filename
+from renamed
