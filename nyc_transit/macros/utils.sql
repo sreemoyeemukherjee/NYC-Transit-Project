@@ -2,8 +2,8 @@
 (case
     when {{column_name}} = '{{true_value}}' then true
     when {{column_name}} = '{{false_value}}' then false
-    when {{column_name}} = '{{null_value}}' then null
-    when {{column_name}} is null then null
+    when {{column_name}} = '{{null_value}}' then false  -- updated nulls to false to have all bool values in column
+    when {{column_name}} is null then false -- updated nulls to false to have all bool values in column
     else {{column_name}}
 end)::bool
 {%- endmacro %}

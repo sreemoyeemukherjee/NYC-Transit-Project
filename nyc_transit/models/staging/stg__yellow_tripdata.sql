@@ -14,10 +14,10 @@ renamed as (
         vendorid,
         tpep_pickup_datetime,
         tpep_dropoff_datetime,
-        passenger_count::int as passenger_count,
+        passenger_count::int as passenger_count, -- passenger count has to be an integer
         trip_distance,
         ratecodeid,
-        {{flag_to_bool("store_and_fwd_flag")}} as store_and_fwd_flag,
+        {{flag_to_bool("store_and_fwd_flag")}} as store_and_fwd_flag, -- using macro to parse column to boolean
         pulocationid,
         dolocationid,
         payment_type,

@@ -42,6 +42,7 @@ renamed as (
 )
 
 select
+    -- combining old and new format same columns
 	coalesce(starttime, started_at)::timestamp as started_at_ts,
 	coalesce(stoptime, ended_at)::timestamp as ended_at_ts,
 	coalesce(tripduration::int,datediff('second', started_at_ts, ended_at_ts)) tripduration,

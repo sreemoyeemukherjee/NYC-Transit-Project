@@ -14,7 +14,7 @@ renamed as (
         vendorid,
         lpep_pickup_datetime,
         lpep_dropoff_datetime,
-        {{flag_to_bool("store_and_fwd_flag")}} as store_and_fwd_flag,
+        {{flag_to_bool("store_and_fwd_flag")}} as store_and_fwd_flag,   -- using macro to parse column to boolean
         ratecodeid,
         pulocationid,
         dolocationid,
