@@ -179,7 +179,7 @@ models:
         tests:
         - relationships:
             to: ref('staging','stg__fhv_bases')
-            field: base_number
+            field: base_number 
 
       - name: pickup_datetime
         description: ""
