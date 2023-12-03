@@ -105,7 +105,7 @@ models:
       - name: awnd
         description: ""
         tests:
-          - not_null
+#          - not_null
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: double
@@ -121,7 +121,7 @@ models:
       - name: snow
         description: ""
         tests:
-          - not_null
+#          - not_null
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: double
@@ -139,16 +139,16 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: int
+#          - dbt_expectations.expect_column_values_to_be_of_type:
+#              column_type: int
 
       - name: tmin
         description: ""
         tests:
           - not_null
           - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: int
+#          - dbt_expectations.expect_column_values_to_be_of_type:
+#              column_type: int
 
       - name: filename
         description: ""

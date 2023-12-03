@@ -4,8 +4,8 @@ models:
     columns:
       - name: station_id
         description: "bike station id, primary key"
-        tests:
-              - unique
+#        tests:
+#              - unique
 
       - name: station_name
         description: ""

@@ -1,23 +1,26 @@
-SELECT
+-- JOIN strategy, excluding NULL locations
+
+with all_trips as
+(select
     weekday(pickup_datetime) as weekday,
-    COUNT(*) as total_trips, -- counting total number of trips
-    SUM(CASE WHEN start_borough <> end_borough THEN 1 ELSE 0 END) as trips_different_borough, -- counting trips starting and ending in different borough
-    (SUM(CASE WHEN start_borough <> end_borough THEN 1 ELSE 0 END) / COUNT(*)) * 100 as percentage_different_borough -- % of trips starting and ending in different borough
-FROM (
-    SELECT
-        all_taxi.*,
-        trip_start.Borough AS start_borough,
-        trip_end.Borough AS end_borough
-    FROM
-        {{ ref('mart__fact_all_taxi_trips') }} all_taxi
-    LEFT JOIN
-        {{ ref('taxi+_zone_lookup') }} trip_start
-    ON
-        all_taxi.pulocationid = trip_start.LocationID -- joining all the trip start borough information
-    LEFT JOIN
-        {{ ref('taxi+_zone_lookup') }} trip_end
-    ON
-        all_taxi.dolocationid = trip_end.LocationID -- joining all the trip end borough information
-) AS joined_data
-GROUP BY
-    weekday(pickup_datetime);
+    count(*) trips
+    from {{ ref('mart__fact_all_taxi_trips') }} t
+    where PUlocationID is not null and DOlocationID is not null
+    group by all),
+
+inter_borough as
+(select
+    weekday(pickup_datetime) as weekday,
+    count(*) as trips
+from {{ ref('mart__fact_all_taxi_trips') }} t
+join {{ ref('mart__dim_locations') }} pl on t.PUlocationID = pl.LocationID
+join {{ ref('mart__dim_locations') }} dl on t.DOlocationID = dl.LocationID
+where pl.borough != dl.borough
+group by all)
+
+select all_trips.weekday,
+       all_trips.trips as all_trips,
+       inter_borough.trips as inter_borough_trips,
+       inter_borough.trips / all_trips.trips as percent_inter_borough
+from all_trips
+join inter_borough on (all_trips.weekday = inter_borough.weekday);
