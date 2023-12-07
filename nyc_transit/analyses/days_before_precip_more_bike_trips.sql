@@ -1,27 +1,21 @@
-WITH weather AS (
+WITH is_prcp_by_day AS
+(
     SELECT
-         CAST(date AS DATE) AS weather_date,
-        (CASE WHEN prcp > 0 OR snow > 0 THEN TRUE ELSE FALSE END) AS is_precip
+        date,
+        (prcp + snow) > 0 AS is_prcp
     FROM {{ ref('stg__central_park_weather') }}
 ),
-bike_trips AS (
+data AS (
     SELECT
-        CAST(started_at_ts AS DATE) AS bike_date,
-        COUNT(*) AS num_trips
-    FROM {{ ref('mart__fact_all_bike_trips') }}
-    GROUP BY bike_date
-),
-weather_trips AS (
-    SELECT
-        b.bike_date,
-        b.num_trips,
-        COALESCE(w.is_precip, FALSE) AS is_precip,
-        COALESCE(LAG(w.is_precip) OVER (ORDER BY b.bike_date), FALSE) AS is_prev_precip
-    FROM bike_trips b
-    LEFT JOIN weather w ON b.bike_date = w.weather_date
+        i.date,
+        is_prcp,
+        LEAD(is_prcp, 1) OVER (ORDER BY i.date) AS is_prcp_next,
+        t.trips AS trips_today,
+        t.trips - n.trips AS trips_next
+    FROM is_prcp_by_day i
+    JOIN {{ ref('mart__fact_all_trips_daily') }} t ON i.date = t.date AND t.type = 'bike'
+    JOIN {{ ref('mart__fact_all_trips_daily') }} n ON (i.date + 1) = n.date AND n.type = 'bike'
 )
-
-SELECT
-    AVG(CASE WHEN is_precip THEN num_trips ELSE NULL END) AS avg_on_precip_days,
-    AVG(CASE WHEN is_prev_precip AND NOT is_precip THEN num_trips ELSE NULL END) AS avg_trips_on_prev_precip_days
-FROM weather_trips;
+SELECT AVG(trips_next/trips_today) trips_reduction
+FROM data
+WHERE is_prcp_next AND NOT is_prcp;

@@ -9,4 +9,4 @@ SELECT
   pickup_zone,
   AVG(time_diff_sec) AS avg_time_between_pickups_in_sec
 FROM joined_data
-GROUP BY pickup_zone;
+GROUP BY ALL;
